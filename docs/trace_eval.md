@@ -1,83 +1,63 @@
-# BAO CAO GIAM SAT & DANH GIA
+# BÁO CÁO GIÁM SÁT & ĐÁNH GIÁ
 
-Danh cho Role 5: Observability & Reviewer.
+Dành cho Role 5: Observability & Reviewer.
 
 ---
 
-## 1. Bang cham diem Agentic Fit (Scoring Matrix)
+## 1. Bảng chấm điểm Agentic Fit (Scoring Matrix)
 
-Chu de nhom chon: **Dat Lich Kham Benh & Tu Van Chuyen Khoa**
+Chủ đề nhóm chọn: **Đặt Lịch Khám Bệnh & Tư Vấn Chuyên Khoa**
 
-| Tieu chi | Diem (1-5) | Ly do danh gia |
+| Tiêu chí | Điểm (1–5) | Lý do đánh giá |
 | :--- | :---: | :--- |
-| Multi-step Reasoning | `5/5` | Agent phai di qua chuoi buoc: doc trieu chung, chi goi y chuyen khoa phu hop, tim bac si, tra cuu lich trong, va co the chot lich hen. |
-| Tool Interaction | `5/5` | Bai toan can cac tool de tra cuu chuyen khoa, tim bac si, tim lich trong va tao booking. Chatbot thuong khong tu truy cap duoc cac du lieu nay. |
-| Dynamic Decision | `4/5` | Huong xu ly thay doi theo muc do trieu chung, tinh day du cua thong tin, va tinh trang con lich hay het lich. |
-| Long Horizon | `4/5` | Quy trinh thuong dai hon 1 lan hoi dap, nhieu luc can 3-5 buoc va co nhanh xu ly thay the neu tool that bai. |
-| **Tong diem fit** | **18/20** | **Ket luan: Bai toan rat phu hop de dung ReAct Agent thay vi chi dung chatbot.** |
+| Multi-step Reasoning | `5/5` | Agent phải đi qua chuỗi bước: đọc triệu chứng, chỉ gợi ý chuyên khoa phù hợp, tìm bác sĩ, tra cứu lịch trống và có thể chốt lịch hẹn. |
+| Tool Interaction | `5/5` | Bài toán cần các tool để tra cứu chuyên khoa, tìm bác sĩ, tìm lịch trống và tạo booking. Chatbot thường không tự truy cập được các dữ liệu này. |
+| Dynamic Decision | `4/5` | Hướng xử lý thay đổi theo mức độ triệu chứng, tính đầy đủ của thông tin và tình trạng còn lịch hay hết lịch. |
+| Long Horizon | `4/5` | Quy trình thường dài hơn một lần hỏi đáp, nhiều lúc cần 3–5 bước và có nhánh xử lý thay thế nếu tool thất bại. |
+| **Tổng điểm fit** | **18/20** | **Kết luận: Bài toán rất phù hợp để dùng ReAct Agent thay vì chỉ dùng chatbot.** |
 
 ---
 
-## 2. So sanh phan hoi cho Test Case #3
+## 2. So sánh phản hồi cho Test Case #3
 
-**Cau hoi:** "Toi bi dau bung am i may ngay nay, muon kham vao chieu ngay mai 2026-07-29. Toi nen kham khoa nao va con lich bac si nao?"
+**Câu hỏi:** “Tôi bị đau bụng âm ỉ mấy ngày nay, muốn khám vào chiều ngày mai 2026-07-29. Tôi nên khám khoa nào và còn lịch bác sĩ nào?”
 
 ### Chatbot Baseline
 
-- Phan hoi ky vong: "Dua tren mo ta, ban co the can kham chuyen khoa Tieu hoa. Tuy nhien toi khong the xac nhan bac si nao con lich neu khong co du lieu thoi gian thuc."
-- Nhan xet: Chatbot co the dua ra goi y thong tin chung, nhung khong giai quyet tron ven yeu cau dat lich.
+- Phản hồi kỳ vọng: “Dựa trên mô tả, bạn có thể cần khám chuyên khoa Tiêu hóa. Tuy nhiên, tôi không thể xác nhận bác sĩ nào còn lịch nếu không có dữ liệu thời gian thực.”
+- Nhận xét: Chatbot có thể đưa ra gợi ý thông tin chung nhưng không giải quyết trọn vẹn yêu cầu đặt lịch.
 
 ### ReAct Agent
 
-- Thought 1: Can doc trieu chung de goi y chuyen khoa phu hop.
-- Action 1: `search_specialties['Toi bi dau bung am i may ngay nay...']`
-- Observation 1: `1. Tieu hoa`
-- Thought 2: Da co chuyen khoa, can tim bac si phu hop.
-- Action 2: `search_doctors[specialty='Tieu hoa']`
-- Observation 2: `BS. Nguyen Minh An`, `BS. Tran Hai Yen`
-- Thought 3: Can tra cuu lich kham con trong cua bac si uu tien.
-- Action 3: `get_available_appointments[doctor_name='BS. Nguyen Minh An', date='2026-07-29']`
-- Observation 3: `Con cac khung gio 14:00, 15:30, 16:00`
-- Final Answer: "Dua tren trieu chung, chuyen khoa phu hop de kham ban dau la Tieu hoa. Day khong phai chan doan benh. Hien BS. Nguyen Minh An con lich vao ngay 2026-07-29."
-- Nhan xet: Agent ket hop suy luan va cong cu nen dap ung duoc ca phan goi y chuyen khoa va phan tra cuu lich.
+- Thought 1: Cần đọc triệu chứng để gợi ý chuyên khoa phù hợp.
+- Action 1: `search_specialties['Tôi bị đau bụng âm ỉ mấy ngày nay...']`
+- Observation 1: `1. Tiêu hóa`
+- Thought 2: Đã có chuyên khoa, cần tìm bác sĩ phù hợp.
+- Action 2: `search_doctors[specialty='Tiêu hóa']`
+- Observation 2: `BS. Nguyễn Minh An`, `BS. Trần Hải Yến`
+- Thought 3: Cần tra cứu lịch khám còn trống của bác sĩ ưu tiên.
+- Action 3: `get_available_appointments[doctor_name='BS. Nguyễn Minh An', date='2026-07-29']`
+- Observation 3: `Còn các khung giờ 14:00, 15:30, 16:00`
+- Final Answer: “Dựa trên triệu chứng, chuyên khoa phù hợp để khám ban đầu là Tiêu hóa. Đây không phải chẩn đoán bệnh. Hiện BS. Nguyễn Minh An còn lịch vào ngày 2026-07-29.”
+- Nhận xét: Agent kết hợp suy luận và công cụ nên đáp ứng được cả phần gợi ý chuyên khoa và phần tra cứu lịch.
 
 ---
 
 ## 3. Tool inventory cho MOC 1
 
-De xuat tool trong `src/tools.py`:
+Đề xuất tool trong `src/tools.py`:
 
 - `search_specialties(symptoms)`
 - `search_doctors(specialty=None, facility=None, doctor_name=None)`
 - `get_available_appointments(doctor_name=None, specialty=None, facility=None, date=None)`
 - `book_appointment(doctor_name, date, time_slot, patient_info)`
 
-Ly do:
+Lý do:
 
-- Tool 1 bien mo ta trieu chung thanh danh sach chuyen khoa goi y.
-- Tool 2 tim bac si theo nhieu bo loc dung voi bai toan thuc te hon.
-- Tool 3 tra cuu slot kham con trong theo ngay va bo loc.
-- Tool 4 mo phong buoc tao booking de khop luong dat lich.
-
----
-
-## 4. Failure modes can theo doi
-
-- Nguoi dung mo ta trieu chung qua mo ho nen khong du de goi y chuyen khoa ro rang.
-- Agent dua ra chan doan benh cu the thay vi chi goi y chuyen khoa.
-- Co dau hieu khan cap nhu kho tho, dau nguc, ngat; agent phai dung luong dat lich thong thuong.
-- Khong tim thay bac si theo bo loc chuyen khoa, co so hoac ten.
-- Khong con lich trong phu hop trong ngay nguoi dung muon.
-- Thieu thong tin dat lich nhu ho ten, ngay, gio, so dien thoai.
-- Nguoi dung doi agent chan doan benh xac dinh hoac de xuat dieu tri thay vi chi tu van chuyen khoa.
+- Tool 1 biến mô tả triệu chứng thành danh sách chuyên khoa gợi ý.
+- Tool 2 tìm bác sĩ theo nhiều bộ lọc, phù hợp với bài toán thực tế hơn.
+- Tool 3 tra cứu slot khám còn trống theo ngày và bộ lọc.
+- Tool 4 mô phỏng bước tạo booking để khớp luồng đặt lịch.
 
 ---
 
-## 5. Kiem tra moi truong MOC 1
-
-Ngay kiem tra: **Tuesday, July 28, 2026**
-
-- Lenh da chay: `python src/app.py`
-- Ket qua: app chay duoc, tai thanh cong `config/test_cases.json`, baseline chatbot va ReAct demo deu in ra ket qua.
-- Dieu chinh da ap dung: neu `.env` chua co API key hop le, he thong tu fallback sang `MockProvider` de ca nhom van demo duoc.
-- Ket luan: moi truong da san sang de sang MOC 2.
