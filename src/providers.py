@@ -48,15 +48,23 @@ class GeminiProvider(BaseLLMProvider):
         if not _has_real_api_key(self.api_key):
             return "[Gemini Error]: Chua cau hinh GEMINI_API_KEY trong file .env."
         try:
-            from google import genai
-
-            client = genai.Client(api_key=self.api_key)
             contents = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
-            response = client.models.generate_content(
-                model=self.model_name,
-                contents=contents,
-            )
-            return response.text
+            try:
+                from google import genai
+
+                client = genai.Client(api_key=self.api_key)
+                response = client.models.generate_content(
+                    model=self.model_name,
+                    contents=contents,
+                )
+                return response.text
+            except ImportError:
+                import google.generativeai as genai
+
+                genai.configure(api_key=self.api_key)
+                model = genai.GenerativeModel(self.model_name)
+                response = model.generate_content(contents)
+                return response.text
         except Exception as exc:
             return f"[Gemini Exception]: {exc}"
 

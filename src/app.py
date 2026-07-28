@@ -73,7 +73,7 @@ def run_react_agent(user_query: str):
             specialty_result = search_specialties(user_query)
             print(f"Observation: {specialty_result}")
 
-            if specialty_result.startswith("KHAN CAP"):
+            if specialty_result.startswith(("KHAN CAP", "KHẨN CẤP")):
                 print("Thought: Tôi đã có đủ thông tin để trả lời.")
                 print(
                     "Final Answer: Triệu chứng có dấu hiệu khẩn cấp. "
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     tests = load_test_cases()
     print(f"Da tai {len(tests)} test cases tu config/test_cases.json")
 
-    sample_query = tests[2]["question"]
+    sample_query = tests[3]["question"]
 
     print("\n--- DEMO 1: BASELINE CHATBOT ---")
     run_baseline_chatbot(sample_query, provider)
