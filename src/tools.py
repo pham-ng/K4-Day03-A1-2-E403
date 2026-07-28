@@ -77,6 +77,13 @@ def _normalize(value: str | None) -> str:
     return without_marks.replace("đ", "d")
 
 
+def _safe_text(value: object) -> str:
+    """Convert any incoming value to a stripped string for safe tool handling."""
+    if value is None:
+        return ""
+    return str(value).strip()
+
+
 def _find_doctors(
     specialty: str | None = None,
     facility: str | None = None,
@@ -278,10 +285,10 @@ def book_appointment(doctor_name: str, date: str, time_slot: str, patient_info: 
         Returns a string starting with "LỖI:" when any required booking field
         is missing.
     """
-    doctor = doctor_name.strip()
-    when = date.strip()
-    slot = time_slot.strip()
-    patient = patient_info.strip()
+    doctor = _safe_text(doctor_name)
+    when = _safe_text(date)
+    slot = _safe_text(time_slot)
+    patient = _safe_text(patient_info)
     if not all([doctor, when, slot, patient]):
         return "LỖI: Thiếu thông tin để đặt lịch. Cần bác sĩ, ngày, giờ và thông tin bệnh nhân."
 
