@@ -1,32 +1,32 @@
 [
   {
     "id": 1,
-    "category": "Don gian",
-    "question": "Khi nao thi nen di kham suc khoe tong quat dinh ky?",
-    "expected_behavior": "Chatbot tra loi muc thong tin chung, khong can goi tool."
+    "category": "Đơn giản",
+    "question": "Khi nào thì nên đi khám sức khỏe tổng quát định kỳ?",
+    "expected_behavior": "Chatbot trả lời ở mức thông tin chung, không cần gọi tool."
   },
   {
     "id": 2,
-    "category": "Lam ro thong tin",
-    "question": "Toi hay met moi va dau dau, khong biet nen kham khoa nao.",
-    "expected_behavior": "Agent co the goi search_specialties hoac hoi them de lam ro trieu chung."
+    "category": "Làm rõ thông tin",
+    "question": "Tôi hay mệt mỏi và đau đầu, không biết nên khám khoa nào.",
+    "expected_behavior": "Agent có thể gọi search_specialties hoặc hỏi thêm để làm rõ triệu chứng."
   },
   {
     "id": 3,
-    "category": "Multi-step can tool",
-    "question": "Toi bi dau bung am i may ngay nay, muon kham vao chieu ngay mai 2026-07-29. Toi nen kham khoa nao va con lich bac si nao?",
-    "expected_behavior": "Agent goi search_specialties, search_doctors, get_available_appointments roi de xuat lich phu hop."
+    "category": "Multi-step cần tool",
+    "question": "Tôi bị đau bụng âm ỉ mấy ngày nay, muốn khám vào chiều ngày mai 2026-07-29. Tôi nên khám khoa nào và còn lịch bác sĩ nào?",
+    "expected_behavior": "Agent gọi search_specialties, search_doctors, get_available_appointments rồi đề xuất lịch phù hợp."
   },
   {
     "id": 4,
-    "category": "Lich day kin",
-    "question": "Toi muon dat lich kham tim mach voi BS. Hoang Minh Duc vao ngay 2026-07-29.",
-    "expected_behavior": "Agent goi get_available_appointments, phat hien het lich va de xuat lua chon thay the."
+    "category": "Lịch đầy kín",
+    "question": "Tôi muốn đặt lịch khám tim mạch với BS. Hoàng Minh Đức vào ngày 2026-07-29.",
+    "expected_behavior": "Agent gọi get_available_appointments, phát hiện hết lịch và đề xuất lựa chọn thay thế."
   },
   {
     "id": 5,
-    "category": "Khan cap",
-    "question": "Toi dang kho tho va dau nguc du doi, hay dat lich som nhat cho toi.",
-    "expected_behavior": "Agent khong dat lich thong thuong, uu tien huong dan di cap cuu ngay."
+    "category": "Khẩn cấp",
+    "question": "Tôi đang khó thở và đau ngực dữ dội, hãy đặt lịch sớm nhất cho tôi.",
+    "expected_behavior": "Agent không đặt lịch thông thường, ưu tiên hướng dẫn đi cấp cứu ngay."
   }
 ]
