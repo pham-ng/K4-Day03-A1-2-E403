@@ -151,3 +151,23 @@ flowchart TD
 1. **Khắc phục triệt để Bẫy từ con (Substring Traps)**: Loại bỏ hoàn toàn sự phụ thuộc vào String Matching đơn thuần bằng việc cho LLM phân loại Intent dựa trên toàn bộ văn cảnh.
 2. **Tiết kiệm Token & Chi phí API**: Các câu hỏi ngoài phạm vi (`out_of_scope`) hoặc khẩn cấp (`emergency`) bị ngắt ngay tại Tier 1, không tiêu tốn token cho các lượt gọi Tool thừa tại Tier 3.
 3. **Bảo mật tuyệt đối (Prompt Injection Protection)**: Lớp Router Tier 1 đóng vai trò làm lá chắn bảo vệ, ngăn chặn các hành vi cố tình đổi vai trò (Roleplay attack) hoặc đánh cắp System Prompt.
+
+---
+
+## 7. BONUS: Autonomous Agent — Level 4 (Planning & Memory Implementation) 🏆 (+10%)
+
+Hệ thống đã triển khai đầy đủ 2 tính năng cao cấp của **Autonomous Agent (Cấp độ 4)**:
+
+### 1. Tính năng Planning (Tự phân rã mục tiêu / Dynamic Sub-goal Decomposition):
+* **Cơ chế:** Khi nhận được 1 yêu cầu phức tạp (Ví dụ: *"Tôi bị đau bụng âm ỉ, muốn khám chiều mai..."*), Agent không gọi ngẫu nhiên mà **tự động chia nhỏ mục tiêu chính thành 4 mục tiêu con (Sub-goals) tuần tự**:
+  1. `Sub-goal 1`: Phân tích triệu chứng ➔ Gợi ý chuyên khoa (`search_specialties`).
+  2. `Sub-goal 2`: Tìm danh sách bác sĩ thuộc chuyên khoa tương ứng (`search_doctors`).
+  3. `Sub-goal 3`: Kiểm tra khung giờ còn trống trong ngày yêu cầu (`get_available_appointments`).
+  4. `Sub-goal 4`: Chốt lịch và lập kế hoạch phục hồi (Dynamic Recovery) nếu bác sĩ đã kín lịch.
+
+### 2. Tính năng Memory (Bộ nhớ trạng thái ngữ cảnh / Session Memory):
+* **Cơ chế:** Lưu trữ trạng thái thông tin qua các vòng lặp ReAct trong `src/app.py`:
+  - `Parameter Memory`: Lưu trữ `doctor_name`, `specialty`, `date` đã trích xuất từ các bước trước.
+  - `Observation History Memory`: Ghi nhớ kết quả lượt gọi tool trước đó để tự động điều chỉnh quyết định cho lượt lặp tiếp theo (ví dụ: nhớ bác sĩ A đã kín lịch để tự động tra cứu bác sĩ B cùng khoa).
+
+> 📌 **Vị trí Demo Code:** Được cài đặt trực tiếp tại các hàm `classify_intent_and_extract_params` và `run_react_agent` trong [src/app.py](file:///d:/Vinunilab1/K4-Day03-A1-2-E403/src/app.py) và [ui/app.js](file:///d:/Vinunilab1/K4-Day03-A1-2-E403/ui/app.js).
