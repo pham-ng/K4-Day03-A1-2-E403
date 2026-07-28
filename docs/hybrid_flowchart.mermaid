@@ -1,26 +1,26 @@
 flowchart TD
-    A[User Query / Câu hỏi người dùng] --> B{Router / Phân loại intent}
+    A["User Query / Câu hỏi người dùng"] --> B{"Router / Phân loại intent"}
     
     %% Đường đi Chatbot Baseline
-    B -->|Câu hỏi chung / Lý thuyết / Khẩn cấp| C[Chatbot Baseline Path]
-    C --> C1[1 LLM Call / Không gọi Tool]
-    C1 --> C2[Trả lời thông tin chung hoặc Cảnh báo 115]
+    B -->|Câu hỏi chung / Lý thuyết / Khẩn cấp| C["Chatbot Baseline Path"]
+    C --> C1["1 LLM Call / Không gọi Tool"]
+    C1 --> C2["Trả lời thông tin chung hoặc Cảnh báo 115"]
     
     %% Đường đi ReAct Agent
-    B -->|Multi-step / Cần tra cứu dữ liệu thực| D[ReAct Agent Loop Path]
-    D --> E[Thought: Suy luận bước tiếp theo]
-    E --> F{Cần gọi Tool?}
+    B -->|Multi-step / Cần tra cứu dữ liệu thực| D["ReAct Agent Loop Path"]
+    D --> E["Thought: Suy luận bước tiếp theo"]
+    E --> F{"Cần gọi Tool?"}
     
-    F -->|Có| G[Action: tool_name[args]]
-    G --> H[Tool Execution in src/tools.py]
-    H --> I[Observation: Result]
-    I --> J{Đạt MAX_ITERATIONS?}
+    F -->|Có| G["Action: tool_name(args)"]
+    G --> H["Tool Execution in src/tools.py"]
+    H --> I["Observation: Result"]
+    I --> J{"Đạt MAX_ITERATIONS?"}
     J -->|Chưa| E
-    J -->|Rồi| K[Safe Fallback Guardrail]
+    J -->|Rồi| K["Safe Fallback Guardrail"]
     
-    F -->|Không - Đủ dữ liệu| L[Final Answer]
+    F -->|Không - Đủ dữ liệu| L["Final Answer"]
     
     %% Đầu ra
-    C2 --> M[Response to User]
+    C2 --> M["Response to User"]
     K --> M
     L --> M
