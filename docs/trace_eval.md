@@ -83,23 +83,3 @@ Observation: Lịch trống ngày 2026-07-29:
 --- Vòng lặp ReAct (Step 4/4) ---
 Thought: Tôi đã có đủ thông tin để trả lời.
 Final Answer: Dựa trên triệu chứng bạn mô tả, chuyên khoa phù hợp để khám ban đầu là Tiêu hóa. Đây không phải chẩn đoán bệnh. Tôi tìm thấy BS. Nguyễn Minh An còn lịch vào ngày 2026-07-29. Bạn có thể chọn một khung giờ còn trống trong phần quan sát để sang bước đặt lịch.
-
----
-
-## 3. Tool inventory cho MOC 1
-
-Đề xuất tool trong `src/tools.py`:
-
-- `search_specialties(symptoms)`
-- `search_doctors(specialty=None, facility=None, doctor_name=None)`
-- `get_available_appointments(doctor_name=None, specialty=None, facility=None, date=None)`
-- `book_appointment(doctor_name, date, time_slot, patient_info)`
-
-Lý do:
-
-- Tool 1 biến mô tả triệu chứng thành danh sách chuyên khoa gợi ý.
-- Tool 2 tìm bác sĩ theo nhiều bộ lọc, phù hợp với bài toán thực tế hơn.
-- Tool 3 tra cứu slot khám còn trống theo ngày và bộ lọc.
-- Tool 4 mô phỏng bước tạo booking để khớp luồng đặt lịch.
-
----
