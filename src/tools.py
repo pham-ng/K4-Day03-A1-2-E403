@@ -11,69 +11,70 @@ They do not diagnose diseases or provide treatment advice.
 
 from __future__ import annotations
 
+import unicodedata
+
 
 EMERGENCY_KEYWORDS = [
     "kho tho",
-    "khó thở",
     "dau nguc",
-    "đau ngực",
     "ngat",
-    "ngất",
     "chay mau nhieu",
-    "chảy máu nhiều",
     "co giat",
-    "co giật",
 ]
 
 
 DOCTORS = [
     {
-        "name": "BS. Nguyen Minh An",
-        "specialty": "Tieu hoa",
-        "facility": "Phong kham Tieu hoa Co so 1",
+        "name": "BS. Nguyễn Minh An",
+        "specialty": "Tiêu hóa",
+        "facility": "Phòng khám Tiêu hóa Cơ sở 1",
         "slots": ["2026-07-29 14:00", "2026-07-29 15:30", "2026-07-29 16:00"],
     },
     {
-        "name": "BS. Tran Hai Yen",
-        "specialty": "Tieu hoa",
-        "facility": "Khoa Noi soi tieu hoa Co so 2",
+        "name": "BS. Trần Hải Yến",
+        "specialty": "Tiêu hóa",
+        "facility": "Khoa Nội soi tiêu hóa Cơ sở 2",
         "slots": ["2026-07-29 13:30", "2026-07-29 17:00"],
     },
     {
-        "name": "BS. Le Quoc Bao",
-        "specialty": "Than kinh",
-        "facility": "Khoa Than kinh Co so 1",
+        "name": "BS. Lê Quốc Bảo",
+        "specialty": "Thần kinh",
+        "facility": "Khoa Thần kinh Cơ sở 1",
         "slots": ["2026-07-29 09:00", "2026-07-29 10:30"],
     },
     {
-        "name": "BS. Do Thanh Tung",
-        "specialty": "Ho hap",
-        "facility": "Khoa Ho hap Co so 1",
+        "name": "BS. Đỗ Thanh Tùng",
+        "specialty": "Hô hấp",
+        "facility": "Khoa Hô hấp Cơ sở 1",
         "slots": ["2026-07-29 08:30", "2026-07-29 11:00"],
     },
     {
-        "name": "BS. Hoang Minh Duc",
-        "specialty": "Tim mach",
-        "facility": "Khoa Tim mach Co so 1",
+        "name": "BS. Hoàng Minh Đức",
+        "specialty": "Tim mạch",
+        "facility": "Khoa Tim mạch Cơ sở 1",
         "slots": [],
     },
     {
-        "name": "BS. Nguyen Bich Van",
-        "specialty": "Tim mach",
-        "facility": "Phong kham Tim mach Co so 2",
+        "name": "BS. Nguyễn Bích Vân",
+        "specialty": "Tim mạch",
+        "facility": "Phòng khám Tim mạch Cơ sở 2",
         "slots": ["2026-07-29 15:00", "2026-07-29 16:30"],
     },
     {
-        "name": "BS. Vu Thanh Mai",
-        "specialty": "Noi tong quat",
-        "facility": "Phong kham tong quat Co so 1",
+        "name": "BS. Vũ Thanh Mai",
+        "specialty": "Nội tổng quát",
+        "facility": "Phòng khám tổng quát Cơ sở 1",
         "slots": ["2026-07-29 08:30", "2026-07-29 11:00"],
     },
 ]
 
 
 def _normalize(value: str | None) -> str:
-    return (value or "").strip().lower()
+    normalized = unicodedata.normalize("NFD", (value or "").strip().lower())
+    without_marks = "".join(
+        char for char in normalized if unicodedata.category(char) != "Mn"
+    )
+    return without_marks.replace("đ", "d")
 
 
 def _find_doctors(
@@ -87,11 +88,11 @@ def _find_doctors(
 
     results = []
     for doctor in DOCTORS:
-        if specialty_value and specialty_value not in doctor["specialty"].lower():
+        if specialty_value and specialty_value not in _normalize(doctor["specialty"]):
             continue
-        if facility_value and facility_value not in doctor["facility"].lower():
+        if facility_value and facility_value not in _normalize(doctor["facility"]):
             continue
-        if doctor_value and doctor_value not in doctor["name"].lower():
+        if doctor_value and doctor_value not in _normalize(doctor["name"]):
             continue
         results.append(doctor)
     return results
@@ -100,51 +101,67 @@ def _find_doctors(
 def search_specialties(symptoms: str) -> str:
     """
     Suggest suitable specialties from symptoms only.
-    This is not a disease diagnosis.
+
+    Purpose:
+        Use symptom text to propose one or more relevant specialties for
+        initial consultation. This tool only maps symptoms to specialties and
+        does not diagnose a disease.
+
+    Args:
+        symptoms: Free-text symptom description from the user.
+
+    Returns:
+        A human-readable string listing suggested specialties, or a warning
+        string for emergency symptoms.
+
+    Error semantics:
+        Returns a string starting with "LỖI:" when the symptom description is
+        missing. Returns a string starting with "KHẨN CẤP:" when the symptom
+        description suggests an emergency case.
     """
     text = _normalize(symptoms)
     if not text:
-        return "LOI: Thieu mo ta trieu chung de goi y chuyen khoa."
+        return "LỖI: Thiếu mô tả triệu chứng để gợi ý chuyên khoa."
 
     if any(keyword in text for keyword in EMERGENCY_KEYWORDS):
         return (
-            "KHAN CAP: Trieu chung co dau hieu nguy hiem. "
-            "Can huong dan nguoi dung den cap cuu ngay thay vi dat lich thong thuong."
+            "KHẨN CẤP: Triệu chứng có dấu hiệu nguy hiểm. "
+            "Cần hướng dẫn người dùng đến cấp cứu ngay thay vì đặt lịch thông thường."
         )
 
-    if any(keyword in text for keyword in ["dau bung", "tieu chay", "o nong", "day hoi", "da day", "dạ dày"]):
+    if any(keyword in text for keyword in ["dau bung", "tieu chay", "o nong", "day hoi", "da day"]):
         return (
-            "Cac chuyen khoa goi y:\n"
-            "1. Tieu hoa\n"
-            "2. Noi tong quat\n"
-            "Luu y: Day chi la goi y chuyen khoa dua tren trieu chung, khong phai chan doan benh."
+            "Các chuyên khoa gợi ý:\n"
+            "1. Tiêu hóa\n"
+            "2. Nội tổng quát\n"
+            "Lưu ý: Đây chỉ là gợi ý chuyên khoa dựa trên triệu chứng, không phải chẩn đoán bệnh."
         )
-    if any(keyword in text for keyword in ["dau dau", "mat ngu", "chong mat", "đau đầu", "mất ngủ", "chóng mặt"]):
+    if any(keyword in text for keyword in ["dau dau", "mat ngu", "chong mat"]):
         return (
-            "Cac chuyen khoa goi y:\n"
-            "1. Than kinh\n"
-            "2. Noi tong quat\n"
-            "Luu y: Day chi la goi y chuyen khoa dua tren trieu chung, khong phai chan doan benh."
+            "Các chuyên khoa gợi ý:\n"
+            "1. Thần kinh\n"
+            "2. Nội tổng quát\n"
+            "Lưu ý: Đây chỉ là gợi ý chuyên khoa dựa trên triệu chứng, không phải chẩn đoán bệnh."
         )
-    if any(keyword in text for keyword in ["sot", "viem hong", "kho tho", "sốt", "viêm họng", "khó thở"]):
+    if any(keyword in text for keyword in ["sot", "viem hong", "kho tho"]):
         return (
-            "Cac chuyen khoa goi y:\n"
-            "1. Ho hap\n"
-            "2. Noi tong quat\n"
-            "Luu y: Day chi la goi y chuyen khoa dua tren trieu chung, khong phai chan doan benh."
+            "Các chuyên khoa gợi ý:\n"
+            "1. Hô hấp\n"
+            "2. Nội tổng quát\n"
+            "Lưu ý: Đây chỉ là gợi ý chuyên khoa dựa trên triệu chứng, không phải chẩn đoán bệnh."
         )
-    if any(keyword in text for keyword in ["dau nguc", "tim dap nhanh", "cao huyet ap", "đau ngực", "tim đập nhanh", "cao huyết áp"]):
+    if any(keyword in text for keyword in ["dau nguc", "tim dap nhanh", "cao huyet ap"]):
         return (
-            "Cac chuyen khoa goi y:\n"
-            "1. Tim mach\n"
-            "2. Noi tong quat\n"
-            "Luu y: Day chi la goi y chuyen khoa dua tren trieu chung, khong phai chan doan benh."
+            "Các chuyên khoa gợi ý:\n"
+            "1. Tim mạch\n"
+            "2. Nội tổng quát\n"
+            "Lưu ý: Đây chỉ là gợi ý chuyên khoa dựa trên triệu chứng, không phải chẩn đoán bệnh."
         )
 
     return (
-        "Cac chuyen khoa goi y:\n"
-        "1. Noi tong quat\n"
-        "Luu y: Trieu chung con mo ho. Can hoi them truoc khi chot huong dat lich."
+        "Các chuyên khoa gợi ý:\n"
+        "1. Nội tổng quát\n"
+        "Lưu ý: Triệu chứng còn mơ hồ. Cần hỏi thêm trước khi chốt hướng đặt lịch."
     )
 
 
@@ -155,18 +172,35 @@ def search_doctors(
 ) -> str:
     """
     Search doctors by specialty, facility, or doctor name.
+
+    Purpose:
+        Filter the mocked doctor directory using one or more lookup fields so
+        the agent can present candidates for booking.
+
+    Args:
+        specialty: Optional specialty filter such as "Tiêu hóa".
+        facility: Optional facility filter such as a clinic or hospital branch.
+        doctor_name: Optional partial or full doctor name.
+
+    Returns:
+        A formatted multi-line string containing matching doctors and their
+        associated specialty and facility.
+
+    Error semantics:
+        Returns a string starting with "LỖI:" when no filter is provided or
+        when no doctors match the requested criteria.
     """
     if not any([specialty, facility, doctor_name]):
-        return "LOI: Can it nhat mot tieu chi tim kiem: specialty, facility hoac doctor_name."
+        return "LỖI: Cần ít nhất một tiêu chí tìm kiếm: specialty, facility hoặc doctor_name."
 
     matches = _find_doctors(specialty=specialty, facility=facility, doctor_name=doctor_name)
     if not matches:
-        return "LOI: Khong tim thay bac si phu hop voi bo loc da yeu cau."
+        return "LỖI: Không tìm thấy bác sĩ phù hợp với bộ lọc đã yêu cầu."
 
-    lines = ["Danh sach bac si phu hop:"]
+    lines = ["Danh sách bác sĩ phù hợp:"]
     for index, doctor in enumerate(matches, start=1):
         lines.append(
-            f"{index}. {doctor['name']} | Chuyen khoa: {doctor['specialty']} | Co so: {doctor['facility']}"
+            f"{index}. {doctor['name']} | Chuyên khoa: {doctor['specialty']} | Cơ sở: {doctor['facility']}"
         )
     return "\n".join(lines)
 
@@ -179,44 +213,85 @@ def get_available_appointments(
 ) -> str:
     """
     Look up available appointment slots using doctor/specialty/facility filters.
+
+    Purpose:
+        Retrieve mocked appointment availability for one or more doctors on a
+        specific date so the agent can recommend valid booking options.
+
+    Args:
+        doctor_name: Optional doctor name filter.
+        specialty: Optional specialty filter.
+        facility: Optional facility filter.
+        date: Required appointment date in YYYY-MM-DD format.
+
+    Returns:
+        A formatted multi-line string describing available time slots or
+        indicating that matching doctors are fully booked on that date.
+
+    Error semantics:
+        Returns a string starting with "LỖI:" when the date is missing or when
+        no doctors match the provided filters.
     """
     if not date:
-        return "LOI: Thieu ngay kham de tra cuu lich trong."
+        return "LỖI: Thiếu ngày khám để tra cứu lịch trống."
 
     matches = _find_doctors(specialty=specialty, facility=facility, doctor_name=doctor_name)
     if not matches:
-        return "LOI: Khong tim thay bac si nao de tra cuu lich kham."
+        return "LỖI: Không tìm thấy bác sĩ nào để tra cứu lịch khám."
 
-    lines = [f"Lich trong ngay {date}:"]
+    lines = [f"Lịch trống ngày {date}:"]
     found_any = False
     for doctor in matches:
         slots = [slot.split(" ", 1)[1] for slot in doctor["slots"] if slot.startswith(date)]
         if slots:
             found_any = True
-            lines.append(f"- {doctor['name']} | Co so: {doctor['facility']} | Gio trong: {', '.join(slots)}")
+            lines.append(
+                f"- {doctor['name']} | Cơ sở: {doctor['facility']} | Giờ trống: {', '.join(slots)}"
+            )
         else:
-            lines.append(f"- {doctor['name']} | Co so: {doctor['facility']} | Da kin lich")
+            lines.append(f"- {doctor['name']} | Cơ sở: {doctor['facility']} | Đã kín lịch")
 
     if not found_any:
-        return f"Lich trong ngay {date}: khong con slot phu hop voi bo loc hien tai."
+        return f"Lịch trống ngày {date}: không còn slot phù hợp với bộ lọc hiện tại."
     return "\n".join(lines)
 
 
 def book_appointment(doctor_name: str, date: str, time_slot: str, patient_info: str) -> str:
     """
     Create a mocked booking confirmation.
+
+    Purpose:
+        Simulate the final booking step after the user has already selected a
+        doctor and a valid appointment slot.
+
+    Args:
+        doctor_name: Selected doctor name.
+        date: Appointment date in YYYY-MM-DD format.
+        time_slot: Selected appointment time such as "14:00".
+        patient_info: Patient identification text, for example name or contact.
+
+    Returns:
+        A confirmation string containing a mocked appointment identifier and
+        the submitted booking details.
+
+    Error semantics:
+        Returns a string starting with "LỖI:" when any required booking field
+        is missing.
     """
     doctor = doctor_name.strip()
     when = date.strip()
     slot = time_slot.strip()
     patient = patient_info.strip()
     if not all([doctor, when, slot, patient]):
-        return "LOI: Thieu thong tin de dat lich. Can bac si, ngay, gio va thong tin benh nhan."
+        return "LỖI: Thiếu thông tin để đặt lịch. Cần bác sĩ, ngày, giờ và thông tin bệnh nhân."
 
-    appointment_id = f"APT-{doctor.replace(' ', '').replace('.', '')[:8].upper()}-{when.replace('-', '')}-{slot.replace(':', '')}"
+    appointment_id = (
+        f"APT-{doctor.replace(' ', '').replace('.', '')[:8].upper()}"
+        f"-{when.replace('-', '')}-{slot.replace(':', '')}"
+    )
     return (
-        f"DAT LICH THANH CONG: appointment_id={appointment_id}; "
-        f"benh nhan={patient}; bac_si={doctor}; ngay={when}; gio={slot}."
+        f"ĐẶT LỊCH THÀNH CÔNG: appointment_id={appointment_id}; "
+        f"bệnh nhân={patient}; bác sĩ={doctor}; ngày={when}; giờ={slot}."
     )
 
 
