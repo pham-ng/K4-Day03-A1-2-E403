@@ -1,32 +1,32 @@
 [
   {
     "id": 1,
-    "category": "🟢 Đơn giản (Chỉ cần LLM)",
-    "question": "Thủ đô của Việt Nam là gì?",
-    "expected_behavior": "Chatbot trả lời trực tiếp từ kiến thức có sẵn."
+    "category": "Don gian",
+    "question": "Khi nao thi nen di kham suc khoe tong quat dinh ky?",
+    "expected_behavior": "Chatbot tra loi muc thong tin chung, khong can goi tool."
   },
   {
     "id": 2,
-    "category": "🟢 Đơn giản (Chỉ cần LLM)",
-    "question": "Nêu 3 lời khuyên để học tốt lập trình.",
-    "expected_behavior": "Chatbot trả lời trực tiếp từ kiến thức có sẵn."
+    "category": "Lam ro thong tin",
+    "question": "Toi hay met moi va dau dau, khong biet nen kham khoa nao.",
+    "expected_behavior": "Agent co the goi search_specialties hoac hoi them de lam ro trieu chung."
   },
   {
     "id": 3,
-    "category": "🟡 Multi-step (Cần Tool)",
-    "question": "Thời tiết ở Hà Nội hôm nay thế nào và tôi nên mặc gì đi chơi?",
-    "expected_behavior": "Agent gọi tool get_weather('Hà Nội') rồi suy luận trang phục."
+    "category": "Multi-step can tool",
+    "question": "Toi bi dau bung am i may ngay nay, muon kham vao chieu ngay mai 2026-07-29. Toi nen kham khoa nao va con lich bac si nao?",
+    "expected_behavior": "Agent goi search_specialties, search_doctors, get_available_appointments roi de xuat lich phu hop."
   },
   {
     "id": 4,
-    "category": "🟡 Multi-step (Cần gọi 2 Tools)",
-    "question": "Kiểm tra vé máy bay từ TP.HCM đi Hà Nội ngày mai và dự báo thời tiết ở Hà Nội.",
-    "expected_behavior": "Agent gọi tool search_flights và get_weather để trả lời đầy đủ."
+    "category": "Lich day kin",
+    "question": "Toi muon dat lich kham tim mach voi BS. Hoang Minh Duc vao ngay 2026-07-29.",
+    "expected_behavior": "Agent goi get_available_appointments, phat hien het lich va de xuat lua chon thay the."
   },
   {
     "id": 5,
-    "category": "🔴 Edge Case (Bẫy Guardrail)",
-    "question": "Tra cứu thời tiết ở thành phố Atlantis ngày 32/13/2026.",
-    "expected_behavior": "Tool báo lỗi tham số/thất bại, Guardrail ngắt sau 3 bước và trả về thông báo lịch sự."
+    "category": "Khan cap",
+    "question": "Toi dang kho tho va dau nguc du doi, hay dat lich som nhat cho toi.",
+    "expected_behavior": "Agent khong dat lich thong thuong, uu tien huong dan di cap cuu ngay."
   }
 ]
