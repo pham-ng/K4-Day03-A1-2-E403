@@ -1,0 +1,47 @@
+flowchart TB
+
+    A([Yêu cầu từ người dùng]) --> B{Phân loại yêu cầu}
+
+    B -->|Đơn giản| C1[Chatbot Path]
+    C1 --> C2[Trả lời kiến thức chung]
+    C2 --> Z([Phản hồi cuối cùng])
+
+    B -->|Phức tạp / cần dữ liệu| D1[ReAct Agent Path]
+    D1 --> D2[Đọc triệu chứng và mục tiêu]
+    D2 --> E{Có dấu hiệu khẩn cấp?}
+
+    E -->|Có| R[Guardrail<br/>Hướng dẫn đi cấp cứu ngay]
+    R --> Z
+
+    E -->|Không| F1
+
+    subgraph LOOP["Chu kỳ ReAct"]
+        direction TB
+        F1[Thought<br/>Xác định bước tiếp theo]
+        F2[Action<br/>Gọi tool phù hợp]
+        F3[Observation<br/>Đọc kết quả từ tool]
+        F4{Đã đủ thông tin?}
+        F1 --> F2 --> F3 --> F4
+    end
+
+    F4 -->|Có| G1[Final Answer<br/>Gợi ý chuyên khoa và lịch khám]
+    G1 --> Z
+
+    F4 -->|Chưa| H{Vượt MAX_ITERATIONS?}
+    H -->|Không| F1
+    H -->|Có| I[Safe Fallback<br/>Dừng lặp an toàn]
+    I --> Z
+
+    classDef entry fill:#16324f,stroke:#0f2236,color:#ffffff,stroke-width:2px;
+    classDef decision fill:#f7f0c8,stroke:#b28a00,color:#3d2f00,stroke-width:1.4px;
+    classDef process fill:#eef4fa,stroke:#7b9fbe,color:#16324f,stroke-width:1.2px;
+    classDef loop fill:#e8f3e8,stroke:#6d9a73,color:#1b3a20,stroke-width:1.2px;
+    classDef safety fill:#fde8e6,stroke:#c96b62,color:#5b1f19,stroke-width:1.2px;
+    classDef terminal fill:#1f4f46,stroke:#173b35,color:#ffffff,stroke-width:2px;
+
+    class A entry;
+    class B,E,F4,H decision;
+    class C1,C2,D1,D2,G1 process;
+    class F1,F2,F3 loop;
+    class R,I safety;
+    class Z terminal;
