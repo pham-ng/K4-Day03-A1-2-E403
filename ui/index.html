@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediAI — Chatbot vs ReAct Agent Demo</title>
+  <meta name="description" content="Demo Lab 3: So sánh Chatbot thông thường và ReAct Agent thông minh trong tư vấn đặt lịch khám bệnh." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <div class="brand-icon">🏥</div>
+        <div class="brand-text">
+          <span class="brand-name">MediAI</span>
+          <span class="brand-sub">Lab 3 Demo</span>
+        </div>
+      </div>
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">☰</button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <span class="nav-label">Chế độ</span>
+      <button class="nav-item active" id="navChatbot" onclick="switchMode('chatbot')">
+        <span class="nav-icon">🤖</span>
+        <span class="nav-text">Chatbot Baseline</span>
+        <span class="nav-badge">Cấp 2</span>
+      </button>
+      <button class="nav-item" id="navReact" onclick="switchMode('react')">
+        <span class="nav-icon">🧠</span>
+        <span class="nav-text">ReAct Agent</span>
+        <span class="nav-badge accent">Cấp 3</span>
+      </button>
+      <button class="nav-item" id="navCompare" onclick="switchMode('compare')">
+        <span class="nav-icon">⚖️</span>
+        <span class="nav-text">So sánh</span>
+        <span class="nav-badge">Side by Side</span>
+      </button>
+
+      <span class="nav-label" style="margin-top:1.5rem;">Công cụ</span>
+      <button class="nav-item" onclick="openDoctorsPanel()">
+        <span class="nav-icon">👨‍⚕️</span>
+        <span class="nav-text">Danh sách Bác sĩ</span>
+      </button>
+      <button class="nav-item" onclick="openTestCases()">
+        <span class="nav-icon">🧪</span>
+        <span class="nav-text">Test Cases</span>
+      </button>
+      <button class="nav-item" onclick="openAILevels()">
+        <span class="nav-icon">📊</span>
+        <span class="nav-text">4 Cấp độ AI</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="status-dot" id="providerStatus"></div>
+      <span id="providerLabel">Mock Offline</span>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main" id="mainContent">
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title" id="pageTitle">🤖 Chatbot Baseline</h1>
+        <span class="page-subtitle" id="pageSubtitle">LLM thuần — không có tools</span>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-ghost" onclick="clearChat()" title="Xóa cuộc trò chuyện">🗑️ Xóa chat</button>
+        <button class="btn btn-primary" onclick="openSettings()">⚙️ Cài đặt</button>
+      </div>
+    </header>
+
+    <!-- MODE: CHATBOT / REACT -->
+    <section class="chat-area" id="chatArea">
+      <!-- Emergency Banner (hidden by default) -->
+      <div class="emergency-banner" id="emergencyBanner" style="display:none;">
+        🚨 <strong>PHÁT HIỆN TRIỆU CHỨNG KHẨN CẤP!</strong> Vui lòng gọi <strong>115</strong> hoặc đến phòng cấp cứu ngay lập tức!
+      </div>
+
+      <!-- Chat messages -->
+      <div class="messages" id="messages">
+        <div class="welcome-card">
+          <div class="welcome-icon">🏥</div>
+          <h2>Xin chào! Tôi là MediAI</h2>
+          <p>Trợ lý tư vấn đặt lịch khám bệnh thông minh. Hãy mô tả triệu chứng hoặc câu hỏi của bạn bên dưới.</p>
+          <div class="quick-chips">
+            <button class="chip" onclick="sendQuick('Tôi bị đau bụng âm ỉ mấy ngày, muốn đặt lịch khám ngày 2026-07-29')">🤒 Đau bụng</button>
+            <button class="chip" onclick="sendQuick('Tôi hay đau đầu và mất ngủ, không biết khám khoa nào')">😵 Đau đầu</button>
+            <button class="chip" onclick="sendQuick('Muốn đặt lịch tim mạch với BS. Hoàng Minh Đức ngày 2026-07-29')">❤️ Tim mạch</button>
+            <button class="chip" onclick="sendQuick('Tôi đang khó thở và đau ngực dữ dội!')">🚨 Khẩn cấp</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input area -->
+      <div class="input-area">
+        <div class="input-row">
+          <textarea
+            id="userInput"
+            class="input-box"
+            placeholder="Mô tả triệu chứng hoặc yêu cầu đặt lịch khám..."
+            rows="1"
+            onkeydown="handleKey(event)"
+            oninput="autoResize(this)"
+          ></textarea>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()" aria-label="Gửi tin nhắn">
+            <span class="send-icon">➤</span>
+          </button>
+        </div>
+        <div class="input-hint">
+          <span>⏎ Enter để gửi &nbsp;|&nbsp; Shift+Enter xuống dòng</span>
+          <span id="modeTag" class="mode-tag chatbot-tag">🤖 Chatbot Mode</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODE: COMPARE (Side by Side) -->
+    <section class="compare-area" id="compareArea" style="display:none;">
+      <div class="compare-header">
+        <h2>⚖️ So sánh: Chatbot vs ReAct Agent</h2>
+        <p>Nhập cùng một câu hỏi để quan sát sự khác biệt giữa hai hệ thống.</p>
+      </div>
+      <div class="compare-input-row">
+        <textarea id="compareInput" class="input-box compare-input-box" placeholder="Nhập câu hỏi để so sánh hai chế độ..." rows="2" onkeydown="handleCompareKey(event)"></textarea>
+        <button class="btn btn-primary" onclick="runCompare()">▶ So sánh ngay</button>
+      </div>
+      <div class="compare-panels">
+        <div class="compare-panel chatbot-panel">
+          <div class="panel-header">
+            <span class="panel-icon">🤖</span>
+            <div>
+              <div class="panel-title">Chatbot Baseline</div>
+              <div class="panel-sub">Cấp độ 2 — LLM thuần</div>
+            </div>
+          </div>
+          <div class="panel-body" id="compareChatbotBody">
+            <div class="panel-empty">Chờ câu hỏi...</div>
+          </div>
+        </div>
+        <div class="compare-panel react-panel">
+          <div class="panel-header">
+            <span class="panel-icon">🧠</span>
+            <div>
+              <div class="panel-title">ReAct Agent</div>
+              <div class="panel-sub">Cấp độ 3 — Thought → Action → Observation</div>
+            </div>
+          </div>
+          <div class="panel-body" id="compareReactBody">
+            <div class="panel-empty">Chờ câu hỏi...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== MODALS ===== -->
+
+  <!-- Doctors Panel Modal -->
+  <div class="modal-overlay" id="doctorsModal" onclick="closeModal('doctorsModal')">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>👨‍⚕️ Danh sách Bác sĩ</h3>
+        <button class="modal-close" onclick="closeModal('doctorsModal')">✕</button>
+      </div>
+      <div class="modal-body" id="doctorsBody"></div>
+    </div>
+  </div>
+
+  <!-- Test Cases Modal -->
+  <div class="modal-overlay" id="testCasesModal" onclick="closeModal('testCasesModal')">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>🧪 Test Cases</h3>
+        <button class="modal-close" onclick="closeModal('testCasesModal')">✕</button>
+      </div>
+      <div class="modal-body" id="testCasesBody"></div>
+    </div>
+  </div>
+
+  <!-- AI Levels Modal -->
+  <div class="modal-overlay" id="aiLevelsModal" onclick="closeModal('aiLevelsModal')">
+    <div class="modal modal-wide" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>📊 4 Cấp độ AI Hội thoại</h3>
+        <button class="modal-close" onclick="closeModal('aiLevelsModal')">✕</button>
+      </div>
+      <div class="modal-body" id="aiLevelsBody"></div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal" onclick="closeModal('settingsModal')">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>⚙️ Cài đặt Provider</h3>
+        <button class="modal-close" onclick="closeModal('settingsModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="settings-form">
+          <label class="settings-label">LLM Provider</label>
+          <select class="settings-select" id="providerSelect" onchange="updateProvider()">
+            <option value="mock">🔌 Mock Offline (Mặc định)</option>
+            <option value="gemini">🌟 Google Gemini</option>
+            <option value="openai">🤖 OpenAI GPT</option>
+            <option value="anthropic">🧠 Anthropic Claude</option>
+            <option value="openrouter">🔀 OpenRouter</option>
+          </select>
+          <label class="settings-label" id="apiKeyLabel" style="display:none;">API Key</label>
+          <input type="password" class="settings-input" id="apiKeyInput" placeholder="sk-..." style="display:none;" />
+          <button class="btn btn-primary" style="width:100%;margin-top:1rem;" onclick="saveSettings()">💾 Lưu cài đặt</button>
+        </div>
+        <div class="settings-info">
+          <p>💡 <strong>Chạy offline?</strong> Chọn Mock Offline để demo không cần API Key.</p>
+          <p>🔑 Để kết nối LLM thật, hãy nhập API Key tương ứng.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ReAct Trace Overlay -->
+  <div class="trace-overlay" id="traceOverlay" style="display:none;">
+    <div class="trace-steps" id="traceSteps"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

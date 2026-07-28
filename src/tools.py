@@ -130,6 +130,56 @@ def search_specialties(symptoms: str) -> str:
     if not text:
         return "LỖI: Thiếu mô tả triệu chứng để gợi ý chuyên khoa."
 
+    # Check Prompt Injection / Security Jailbreak Attacks
+    injection_keywords = [
+        "ignore all", "ignore previous", "bo qua quy tac", "quen het quy tac",
+        "system prompt", "show prompt", "bay gio ban la", "roleplay", "jailbreak"
+    ]
+    if any(ik in text for ik in injection_keywords):
+        return "SECURITY GUARDRAIL: Phát hiện hành vi Prompt Injection / Jailbreak. Từ chối thay đổi quy tắc an toàn."
+
+    import re
+    # Exclude non-medical metaphors and out-of-scope phrases
+    out_of_scope_keywords = ["sot dat", "di hoc", "hoc o dau", "ban ve", "game", "sot gia"]
+    if any(ok in text for ok in out_of_scope_keywords):
+        return "OUT OF SCOPE: Câu hỏi nằm ngoài phạm vi tư vấn y tế và đặt lịch khám bệnh."
+
+    # General Body Part vs Requested Specialty Mismatch Extractor
+    body_parts_map = [
+        {"keywords": ["rang"], "name": "Răng - Hàm - Mặt"},
+        {"keywords": ["chim", "duong vat", "tinh hoan", "nam khoa"], "name": "Nam khoa / Tiết niệu"},
+        {"keywords": ["mat"], "name": "Mắt / Nhãn khoa"},
+        {"keywords": ["tai", "mui"], "name": "Tai - Mũi - Họng"},
+        {"keywords": ["xuong", "khop"], "name": "Cơ Xương Khớp"}
+    ]
+
+    requested_specs_map = [
+        {"keywords": ["than kinh", "nao"], "name": "Thần kinh"},
+        {"keywords": ["tim", "mo tim", "tim mach"], "name": "Tim mạch"},
+        {"keywords": ["ho hap", "phoi"], "name": "Hô hấp"}
+    ]
+
+    found_body_part = next((bp for bp in body_parts_map if any(k in text for k in bp["keywords"])), None)
+    found_req_spec = next((rs for rs in requested_specs_map if any(k in text for k in rs["keywords"])), None)
+
+    if found_body_part and found_req_spec:
+        return (
+            f"⚠️ PHÁT HIỆN MÂU THUẪN LOGIC: Triệu chứng mô tả liên quan đến chuyên khoa '{found_body_part['name']}', "
+            f"nhưng bạn lại yêu cầu khám '{found_req_spec['name']}'. "
+            "Vui lòng làm rõ nhu cầu để được tư vấn chính xác!"
+        )
+
+    has_ho_word = bool(re.search(r"\bho\b", text))
+    medical_keywords = [
+        "kham", "benh", "dau bung", "dau dau", "dau nguc", "dau nhuc", "dau lung", "dau hong",
+        "bi dau", "bac si", "lich", "suc khoe", "trieu chung", "sot cao", "bi sot", "sot virut", "viem", "met moi",
+        "da day", "tim", "than kinh", "ho hap", "tieu hoa", "cap cuu", "nhap vien",
+        "thuoc", "xet nghiem", "benh vien", "phong kham", "dinh ky", "dat lich", "dat hen", "dat cho", "dat kham"
+    ]
+    is_medical = any(k in text for k in medical_keywords) or has_ho_word
+    if not is_medical:
+        return "OUT OF SCOPE: Câu hỏi nằm ngoài phạm vi tư vấn y tế và đặt lịch khám bệnh."
+
     if any(keyword in text for keyword in EMERGENCY_KEYWORDS):
         return (
             "KHẨN CẤP: Triệu chứng có dấu hiệu nguy hiểm. "
@@ -143,14 +193,14 @@ def search_specialties(symptoms: str) -> str:
             "2. Nội tổng quát\n"
             "Lưu ý: Đây chỉ là gợi ý chuyên khoa dựa trên triệu chứng, không phải chẩn đoán bệnh."
         )
-    if any(keyword in text for keyword in ["dau dau", "mat ngu", "chong mat"]):
+    if any(keyword in text for keyword in ["dau dau", "mat ngu", "chong mat", "met moi"]):
         return (
             "Các chuyên khoa gợi ý:\n"
             "1. Thần kinh\n"
             "2. Nội tổng quát\n"
             "Lưu ý: Đây chỉ là gợi ý chuyên khoa dựa trên triệu chứng, không phải chẩn đoán bệnh."
         )
-    if any(keyword in text for keyword in ["sot", "viem hong", "kho tho"]):
+    if any(keyword in text for keyword in ["sot", "viem hong", "kho tho"]) or has_ho_word:
         return (
             "Các chuyên khoa gợi ý:\n"
             "1. Hô hấp\n"
